@@ -8,7 +8,7 @@ import os
 
 parser = argparse.ArgumentParser(prog="macinfo", description="macinfo - identify device by MAC address", epilog="(c)Ivaylo Vasilev")
 parser.add_argument("macaddr", nargs="?", help="specify MAC address")
-parser.add_argument("--version", action="version", version="%(prog)s 0.1-beta-3", help="show program version")
+parser.add_argument("--version", action="version", version="%(prog)s 0.1.1", help="show program version")
 args = parser.parse_args()
 
 
