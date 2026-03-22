@@ -8,13 +8,19 @@ import os
 
 parser = argparse.ArgumentParser(prog="macinfo", description="macinfo - identify device by MAC address", epilog="(c)Ivaylo Vasilev")
 parser.add_argument("macaddr", nargs="?", help="specify MAC address")
-parser.add_argument("--version", action="version", version="%(prog)s 0.1.1", help="show program version")
+parser.add_argument("--update", action="store_true", help="update macdb file")
+parser.add_argument("--version", action="version", version="%(prog)s 0.2-beta1", help="show program version")
 args = parser.parse_args()
 
 
 def main():
     if len(sys.argv) == 1:
         parser.print_help()
+        sys.exit(0)
+    elif args.update:
+        # implement a download function from macdb-website; update function
+        # db-url(to JSON file: 'get-db'): https://maclookup.app/downloads/json-database/get-db
+        print("macdb is up-to-date")
         sys.exit(0)
     
     if re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", args.macaddr):
