@@ -3,13 +3,16 @@
 import argparse
 import re
 import json
+import requests
 import sys
 import os
+
+USER_AGENT = "macinfo/0.2-beta"
 
 parser = argparse.ArgumentParser(prog="macinfo", description="macinfo - identify device by MAC address", epilog="(c)Ivaylo Vasilev")
 parser.add_argument("macaddr", nargs="?", help="specify MAC address")
 parser.add_argument("--update", action="store_true", help="update macdb file")
-parser.add_argument("--version", action="version", version="%(prog)s 0.2-beta1", help="show program version")
+parser.add_argument("--version", action="version", version="%(prog)s 0.2-beta2", help="show program version")
 args = parser.parse_args()
 
 
@@ -55,6 +58,18 @@ def mac_address_info(mac):
             vendor = None
     
     return vendor
+
+
+# create a reliable download function; use try-except to parse any possible errors
+def download_db():
+    r = requests.get(url="https://maclookup.app/downloads/json-database/get-db", headers={"User-Agent": USER_AGENT}, stream=True)
+
+    # download and save the database in JSON format
+    with open("macdb.json", "wb") as file:
+        for chunk in r.iter_content(chunk_size=1024):
+            file.write(chunk)
+    
+    return
 
 
 if __name__ == "__main__":
