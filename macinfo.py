@@ -4,15 +4,16 @@ import argparse
 import re
 import json
 import requests
+import time
 import sys
 import os
 
-USER_AGENT = "macinfo/0.2-beta"
+USER_AGENT = "macinfo/0.3"
 
 parser = argparse.ArgumentParser(prog="macinfo", description="macinfo - identify device by MAC address", epilog="(c)Ivaylo Vasilev")
 parser.add_argument("macaddr", nargs="?", help="specify MAC address")
 parser.add_argument("--update", action="store_true", help="update macdb file")
-parser.add_argument("--version", action="version", version="%(prog)s 0.2-beta2", help="show program version")
+parser.add_argument("--version", action="version", version="%(prog)s 0.3", help="show program version")
 args = parser.parse_args()
 
 
@@ -23,7 +24,8 @@ def main():
     elif args.update:
         # implement a download function from macdb-website; update function
         # db-url(to JSON file: 'get-db'): https://maclookup.app/downloads/json-database/get-db
-        print("macdb is up-to-date")
+        print("[*] updating database...")
+        print(download_db(update=True))
         sys.exit(0)
     
     if re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", args.macaddr):
@@ -44,7 +46,8 @@ def mac_address_info(mac):
     if not os.path.exists("macdb.json"):
         # implement a download function from macdb-url
         print("error: macdb.json not found")
-        sys.exit(1)
+        print("[*] downloading database...")
+        print(download_db())
     
     # open and load macdb.json; search for MAC information (vendor)
     with open("macdb.json", "r") as file:
@@ -61,15 +64,25 @@ def mac_address_info(mac):
 
 
 # create a reliable download function; use try-except to parse any possible errors
-def download_db():
-    r = requests.get(url="https://maclookup.app/downloads/json-database/get-db", headers={"User-Agent": USER_AGENT}, stream=True)
+def download_db(update=False):
+    try:
+        r = requests.get(url="https://maclookup.app/downloads/json-database/get-db", headers={"User-Agent": USER_AGENT}, stream=True)
 
-    # download and save the database in JSON format
-    with open("macdb.json", "wb") as file:
-        for chunk in r.iter_content(chunk_size=1024):
-            file.write(chunk)
-    
-    return
+        # download and save the database in JSON format
+        with open("macdb.json", "wb") as file:
+            for chunk in r.iter_content(chunk_size=1024):
+                file.write(chunk)
+        
+        with open("db-date", "w") as datefile:
+            current_date = time.strftime("%Y-%m-%d\n")
+            datefile.write(current_date)
+        
+        if update == True:
+            return "[+] database updated"
+        else:
+            return "[+] database downloaded"
+    except requests.exceptions.ConnectionError:
+        return "[!] connection error"
 
 
 if __name__ == "__main__":
