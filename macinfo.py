@@ -8,12 +8,12 @@ import time
 import sys
 import os
 
-USER_AGENT = "macinfo/0.3"
+USER_AGENT = "macinfo/0.3.1"
 
 parser = argparse.ArgumentParser(prog="macinfo", description="macinfo - identify device by MAC address", epilog="(c)Ivaylo Vasilev")
 parser.add_argument("macaddr", nargs="?", help="specify MAC address")
 parser.add_argument("--update", action="store_true", help="update macdb file")
-parser.add_argument("--version", action="version", version="%(prog)s 0.3", help="show program version")
+parser.add_argument("--version", action="version", version="%(prog)s 0.3.1", help="show program version")
 args = parser.parse_args()
 
 
@@ -22,7 +22,6 @@ def main():
         parser.print_help()
         sys.exit(0)
     elif args.update:
-        # implement a download function from macdb-website; update function
         # db-url(to JSON file: 'get-db'): https://maclookup.app/downloads/json-database/get-db
         print("[*] updating database...")
         print(download_db(update=True))
@@ -44,7 +43,6 @@ def main():
 
 def mac_address_info(mac):
     if not os.path.exists("macdb.json"):
-        # implement a download function from macdb-url
         print("error: macdb.json not found")
         print("[*] downloading database...")
         print(download_db())
@@ -63,7 +61,6 @@ def mac_address_info(mac):
     return vendor
 
 
-# create a reliable download function; use try-except to parse any possible errors
 def download_db(update=False):
     try:
         r = requests.get(url="https://maclookup.app/downloads/json-database/get-db", headers={"User-Agent": USER_AGENT}, stream=True)
@@ -83,6 +80,8 @@ def download_db(update=False):
             return "[+] database downloaded"
     except requests.exceptions.ConnectionError:
         return "[!] connection error"
+    except requests.exceptions.ConnectTimeout:
+        return "[!] connection timeout"
 
 
 if __name__ == "__main__":
